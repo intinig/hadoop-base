@@ -1,0 +1,59 @@
+services:
+  namenode:
+    image: apache/hadoop:3
+    hostname: namenode
+    command: ["/bin/bash", "-c", "if [ ! -f /hadoop/dfs/name/current/VERSION ]; then hdfs namenode -format -force && hdfs namenode; else hdfs namenode; fi"]
+    ports:
+      - 9870:9870
+    env_file:
+      - ./config
+    volumes:
+      - /mnt/data/hadoop/namenode:/hadoop/dfs/name
+    user: "1000:1000"
+
+  datanode:
+    image: apache/hadoop:3
+    command: ["hdfs", "datanode"]
+    env_file:
+      - ./config
+    volumes:
+      - /mnt/data/hadoop/datanode:/hadoop/dfs/data
+    user: "1000:1000"
+
+  resourcemanager:
+    image: apache/hadoop:3
+    hostname: resourcemanager
+    command: ["yarn", "resourcemanager"]
+    ports:
+      - 8088:8088
+    env_file:
+      - ./config
+
+  nodemanager:
+    image: apache/hadoop:3
+    command: ["yarn", "nodemanager"]
+    env_file:
+      - ./config
+    volumes:
+      - /mnt/data/hadoop/nodemanager:/hadoop/yarn/data
+    user: "1000:1000"
+
+volumes:
+  namenode:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/hadoop/namenode
+  datanode:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/hadoop/datanode
+  nodemanager:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/hadoop/nodemanager
